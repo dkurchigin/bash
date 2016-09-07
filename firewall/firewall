@@ -1,0 +1,41 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          firewall
+# Required-Start:
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: simple description.
+### END INIT INFO
+
+load_me() {
+	/sbin/iptables-restore < /etc/ip_rulles.lst
+}
+
+flush_all() {
+	iptables -F
+	iptables -X
+	iptables -t nat -F
+	iptables -t nat -X
+	iptables -t mangle -F
+	iptables -t mangle -X
+	iptables -P INPUT ACCEPT
+	iptables -P OUTPUT ACCEPT
+	iptables -P FORWARD ACCEPT
+}
+
+case "$1" in
+    start)
+        echo "Starting firewall."
+        load_me
+	;;
+    stop)
+        echo "Flush all chains."
+	flush_all
+    ;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+esac
+exit 0
+

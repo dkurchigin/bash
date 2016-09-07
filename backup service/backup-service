@@ -1,0 +1,62 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          backup-service
+# Required-Start:
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: simple description.
+### END INIT INFO
+
+do_copying() {
+	scrpt_dir=/usr/local/etc/backup/
+
+	date +%d.%m.%Y > /tmp/current_date
+	read current_run < /tmp/current_date
+	rm /tmp/current_date
+
+	if [ -e backuping.conf ]
+	then 
+		awk '/LastRun/ { print $2 }' "$scrpt_dir"/backuping.conf > /tmp/last_running	
+		read last_run < /tmp/last_running
+		rm /tmp/last_running
+
+		awk '/Count/ { print $2 }' "$scrpt_dir"/backuping.conf > /tmp/backup_count
+		read cnt < /tmp/backup_count
+		rm /tmp/backup_count	
+
+		if [ "$current_run" != "$last_run" ]
+		then
+			if [ "$cnt" == 1 ]
+			then
+				"$scrpt_dir"/backup_copying.sh > /dev/null
+				cnt=15
+				echo "LastRun "$current_run"" > "$scrpt_dir"/backuping.conf
+				echo "Count "$cnt"" >> "$scrpt_dir"/backuping.conf
+			else
+				let "cnt = cnt - 1"
+				echo "LastRun "$current_run"" > "$scrpt_dir"/backuping.conf
+				echo "Count "$cnt"" >> "$scrpt_dir"/backuping.conf
+			fi
+		
+		fi
+	else
+		cnt=15 
+		echo "LastRun "$current_run"" > "$scrpt_dir"/backuping.conf
+		echo "Count "$cnt"" >> "$scrpt_dir"/backuping.conf
+	fi
+}
+
+case "$1" in
+    start)
+        echo "Starting backup copying."
+        do_copying
+	;;
+    stop)
+        echo "All data was safe!"
+    ;;
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+esac
+exit 0

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+CONF=/home/mydeb/.asoundrc
+
+if [[ -e $CONF ]]
+then 
+	mv $CONF "$CONF"off
+	notify-send -t 1000 "HDMI" "Звук идет через стандартный динамик"
+	exit 0
+elif [[ -e "$CONF"off ]]
+then 
+	mv "$CONF"off $CONF
+	notify-send -t 1000 "HDMI" "Звук идет через hdmi"
+	exit 0
+else
+	notify-send -t 1000 "HDMI" "Отсутствуют файлы настройки звука .asoundrc и .asoundrcoff"
+	exit 1
+fi
